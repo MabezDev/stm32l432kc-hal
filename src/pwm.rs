@@ -2,6 +2,7 @@
 
 use core::marker::PhantomData;
 use core::mem;
+use core::convert::Infallible;
 
 use crate::hal;
 use crate::stm32::{TIM1, TIM15, TIM2};
@@ -351,32 +352,37 @@ macro_rules! small_timer {
 macro_rules! pwm_channels {
     ($TIMX:ident: $(($channel:ident, $arr_width:ident, $ccXe:ident, $ccrX:ident, $ccr:ident),)+) => {
         $(
-            impl hal::PwmPin for Pwm<$TIMX, $channel> {
+            impl hal::pwm::PwmPin for Pwm<$TIMX, $channel> {
+                type Error = Infallible;
+
                 type Duty = $arr_width;
 
                 #[inline(always)]
-                fn disable(&mut self) {
+                fn try_disable(&mut self) -> Result<(), Self::Error> {
                     unsafe { (*$TIMX::ptr()).ccer.modify(|_, w| w.$ccXe().clear_bit()) }
+                    Ok(())
                 }
 
                 #[inline(always)]
-                fn enable(&mut self) {
+                fn try_enable(&mut self) -> Result<(), Self::Error> {
                     unsafe { (*$TIMX::ptr()).ccer.modify(|_, w| w.$ccXe().set_bit()) }
+                    Ok(())
                 }
 
                 #[inline(always)]
-                fn get_duty(&self) -> Self::Duty {
-                    unsafe { (*$TIMX::ptr()).$ccrX.read().$ccr().bits() }
+                fn try_get_duty(&self) -> Result<Self::Duty, Self::Error> {
+                    Ok(unsafe { (*$TIMX::ptr()).$ccrX.read().$ccr().bits() })
                 }
 
                 #[inline(always)]
-                fn get_max_duty(&self) -> Self::Duty {
-                    unsafe { (*$TIMX::ptr()).arr.read().arr().bits() }
+                fn try_get_max_duty(&self) -> Result<Self::Duty, Self::Error> {
+                    Ok(unsafe { (*$TIMX::ptr()).arr.read().arr().bits() })
                 }
 
                 #[inline(always)]
-                fn set_duty(&mut self, duty: Self::Duty) {
-                    unsafe { (*$TIMX::ptr()).$ccrX.write(|w| w.$ccr().bits(duty)) }
+                fn try_set_duty(&mut self, duty: Self::Duty) -> Result<(), Self::Error> {
+                    unsafe { (*$TIMX::ptr()).$ccrX.write(|w| w.$ccr().bits(duty)) };
+                    Ok(())
                 }
             }
         )+

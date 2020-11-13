@@ -60,15 +60,15 @@ fn main() -> ! {
     // The `block!` macro makes an operation block until it finishes
     // NOTE the error type is `!`
 
-    block!(tx.write(sent)).ok();
-    block!(tx.write(sent)).ok();
-    block!(tx.write(sent)).ok();
-    block!(tx.write(sent)).ok();
-    block!(tx.write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
 
     // when using virtual com port for recieve can causes a framing error
     // On the stm32l476 discovery it is working fine at 115200 baud
-    let received = block!(rx.read()).unwrap();
+    let received = block!(rx.try_read()).unwrap();
 
     assert_eq!(received, sent);
 

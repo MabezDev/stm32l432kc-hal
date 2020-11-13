@@ -1,7 +1,5 @@
 //! RTC peripheral abstraction
 
-use void::Void;
-
 use crate::{
     datetime::*,
     hal::timer::{self, Cancel as _},
@@ -9,6 +7,7 @@ use crate::{
     rcc::{APB1R1, BDCR},
     stm32::{EXTI, RTC},
 };
+use core::convert::Infallible;
 
 /// Interrupt event
 pub enum Event {
@@ -462,6 +461,8 @@ pub struct WakeupTimer<'r> {
 impl timer::Periodic for WakeupTimer<'_> {}
 
 impl timer::CountDown for WakeupTimer<'_> {
+    type Error = Infallible;
+
     type Time = u32;
 
     /// Starts the wakeup timer
@@ -473,7 +474,7 @@ impl timer::CountDown for WakeupTimer<'_> {
     ///
     /// The `delay` argument must be in the range `1 <= delay <= 2^17`.
     /// Panics, if `delay` is outside of that range.
-    fn start<T>(&mut self, delay: T)
+    fn try_start<T>(&mut self, delay: T) -> Result<(), Self::Error>
     where
         T: Into<Self::Time>,
     {
@@ -482,8 +483,7 @@ impl timer::CountDown for WakeupTimer<'_> {
 
         let delay = delay - 1;
 
-        // Can't panic, as the error type is `Void`.
-        self.cancel().unwrap();
+        self.try_cancel()?;
 
         self.rtc.write(false, |rtc| {
             // Set the wakeup delay
@@ -511,10 +511,11 @@ impl timer::CountDown for WakeupTimer<'_> {
 
         // Let's wait for WUTWF to clear. Otherwise we might run into a race
         // condition, if the user calls this method again really quickly.
-        while self.rtc.rtc.isr.read().wutwf().bit_is_set() {}
+        while self.rtc.rtc.isr.read().wutwf().bit_is_set() {};
+        Ok(())
     }
 
-    fn wait(&mut self) -> nb::Result<(), Void> {
+    fn try_wait(&mut self) -> nb::Result<(), Self::Error> {
         if self.rtc.check_interrupt(Event::WakeupTimer, true) {
             return Ok(());
         }
@@ -524,9 +525,7 @@ impl timer::CountDown for WakeupTimer<'_> {
 }
 
 impl timer::Cancel for WakeupTimer<'_> {
-    type Error = Void;
-
-    fn cancel(&mut self) -> Result<(), Self::Error> {
+    fn try_cancel(&mut self) -> Result<(), Self::Error> {
         self.rtc.write(false, |rtc| {
             // Disable the wakeup timer
             rtc.cr.modify(|_, w| w.wute().clear_bit());

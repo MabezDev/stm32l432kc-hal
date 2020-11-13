@@ -1,5 +1,4 @@
 extern crate core;
-#[cfg(feature = "unproven")]
 use core::cmp;
 
 use crate::rcc::{Clocks, AHB2};
@@ -94,14 +93,13 @@ impl Rng {
 #[derive(Debug)]
 pub enum Error {}
 
-#[cfg(feature = "unproven")]
 impl crate::hal::blocking::rng::Read for Rng {
     // TODO: this error seems pretty useless if it
     // doesn't flag non-enabled RNG or non-started HSI48,
     // but that would be a runtime cost :/
     type Error = Error;
 
-    fn read(&mut self, buffer: &mut [u8]) -> Result<(), Self::Error> {
+    fn try_read(&mut self, buffer: &mut [u8]) -> Result<(), Self::Error> {
         let mut i = 0usize;
         while i < buffer.len() {
             let random_word: u32 = self.get_random_data();

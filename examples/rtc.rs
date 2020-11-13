@@ -58,9 +58,9 @@ fn main() -> ! {
 
     rtc.set_date_time(date, time);
 
-    timer.delay_ms(1000_u32);
-    timer.delay_ms(1000_u32);
-    timer.delay_ms(1000_u32);
+    timer.try_delay_ms(1000_u32).ok();
+    timer.try_delay_ms(1000_u32).ok();
+    timer.try_delay_ms(1000_u32).ok();
 
     let (rtc_date, rtc_time) = rtc.get_date_time();
 

@@ -71,10 +71,10 @@ fn main() -> ! {
     loop {
         const N: usize = 5;
         let mut random_bytes = [0u8; N];
-        rng.read(&mut random_bytes)
+        rng.try_read(&mut random_bytes)
             .expect("missing random data for some reason");
         uprintln!(&mut tx, "{} random u8 values: {:?}", N, random_bytes);
 
-        timer.delay_ms(some_time);
+        timer.try_delay_ms(some_time).ok();
     }
 }

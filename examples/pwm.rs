@@ -47,9 +47,9 @@ fn main() -> ! {
         .pwm((c1, c2, c3, c4), 1.khz(), clocks, &mut rcc.apb1r1)
         .3;
 
-    let max = pwm.get_max_duty();
+    let max = pwm.try_get_max_duty().unwrap();
 
-    pwm.enable();
+    pwm.try_enable().ok();
 
     let mut timer = delay::Delay::new(c.SYST, clocks);
     let second: u32 = 100;
@@ -57,24 +57,24 @@ fn main() -> ! {
     // NB: if the pins are LEDs, brightness is not
     //     linear in duty value.
     loop {
-        pwm.set_duty(max);
-        timer.delay_ms(second);
+        pwm.try_set_duty(max).ok();
+        timer.try_delay_ms(second).ok();
         // asm::bkpt();
 
-        pwm.set_duty(max / 11 * 10);
-        timer.delay_ms(second);
+        pwm.try_set_duty(max / 11 * 10).ok();
+        timer.try_delay_ms(second).ok();
         // asm::bkpt();
 
-        pwm.set_duty(3 * max / 4);
-        timer.delay_ms(second);
+        pwm.try_set_duty(3 * max / 4).ok();
+        timer.try_delay_ms(second).ok();
         // asm::bkpt();
 
-        pwm.set_duty(max / 2);
-        timer.delay_ms(second);
+        pwm.try_set_duty(max / 2).ok();
+        timer.try_delay_ms(second).ok();
         // asm::bkpt();
 
-        pwm.set_duty(max / 4);
-        timer.delay_ms(second);
+        pwm.try_set_duty(max / 4).ok();
+        timer.try_delay_ms(second).ok();
         // asm::bkpt();
     }
 }

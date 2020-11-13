@@ -61,7 +61,7 @@ fn main() -> ! {
     // let alarm_date = date;
     // rtc.set_alarm(Alarm::AlarmA, alarm_date, alarm_time);
     let mut wkp = rtc.wakeup_timer();
-    wkp.start(15_u32);
+    wkp.try_start(15_u32).ok();
     rtc.listen(&mut dp.EXTI, Event::WakeupTimer);
 
     unsafe {

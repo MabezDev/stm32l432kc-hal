@@ -64,7 +64,7 @@ fn main() -> ! {
     // The `block!` macro makes an operation block until it finishes
     // NOTE the error type is `!`
 
-    block!(tx.write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
 
     let buf = singleton!(: [[u8; 8]; 2] = [[0; 8]; 2]).unwrap();
 

@@ -232,7 +232,7 @@ impl<'a> Drop for Tx<'a> {
 impl<'a> Write for Tx<'a> {
     type Error = Error;
 
-    fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Error> {
+    fn try_write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Error> {
         let total_len = bytes.len();
         bytes
             .chunks(MAX_NBYTE_SIZE)
@@ -320,7 +320,7 @@ impl<'a> Drop for Rx<'a> {
 impl<'a> Read for Rx<'a> {
     type Error = Error;
 
-    fn read(&mut self, addr: u8, buffer: &mut [u8]) -> Result<(), Error> {
+    fn try_read(&mut self, addr: u8, buffer: &mut [u8]) -> Result<(), Error> {
         let total_len = buffer.len();
         buffer
             .chunks_mut(MAX_NBYTE_SIZE)
@@ -489,8 +489,8 @@ where
 {
     type Error = Error;
 
-    fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Error> {
-        Tx::new(&self.i2c)?.write(addr, bytes)
+    fn try_write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Error> {
+        Tx::new(&self.i2c)?.try_write(addr, bytes)
     }
 }
 
@@ -500,8 +500,8 @@ where
 {
     type Error = Error;
 
-    fn read(&mut self, addr: u8, buffer: &mut [u8]) -> Result<(), Error> {
-        Rx::new(&self.i2c)?.read(addr, buffer)
+    fn try_read(&mut self, addr: u8, buffer: &mut [u8]) -> Result<(), Error> {
+        Rx::new(&self.i2c)?.try_read(addr, buffer)
     }
 }
 
@@ -511,9 +511,9 @@ where
 {
     type Error = Error;
 
-    fn write_read(&mut self, addr: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<(), Error> {
-        self.write(addr, bytes)?;
-        self.read(addr, buffer)
+    fn try_write_read(&mut self, addr: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<(), Error> {
+        self.try_write(addr, bytes)?;
+        self.try_read(addr, buffer)
     }
 }
 

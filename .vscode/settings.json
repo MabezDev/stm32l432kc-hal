@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.cargo.features": [
+        "stm32l4x5",
+        "rt"
+    ]
+}

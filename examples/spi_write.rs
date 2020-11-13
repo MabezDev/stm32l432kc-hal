@@ -58,8 +58,8 @@ fn main() -> ! {
     let miso = gpioa.pa6.into_af5(&mut gpioa.moder, &mut gpioa.afrl);
     let mosi = gpioa.pa7.into_af5(&mut gpioa.moder, &mut gpioa.afrl);
 
-    // nss.set_high();
-    dc.set_low().ok();
+    // nss.try_set_high().ok();
+    dc.try_set_low().ok();
 
     let mut spi = Spi::spi1(
         p.SPI1,
@@ -73,10 +73,10 @@ fn main() -> ! {
 
     // nss.set_low();
     let data = [0x3C];
-    spi.write(&data).unwrap();
-    spi.write(&data).unwrap();
-    spi.write(&data).unwrap();
-    // nss.set_high();
+    spi.try_write(&data).unwrap();
+    spi.try_write(&data).unwrap();
+    spi.try_write(&data).unwrap();
+    // nss.try_set_high().ok();
 
     // when you reach this breakpoint you'll be able to inspect the variable `_m` which contains the
     // gyroscope and the temperature sensor readings

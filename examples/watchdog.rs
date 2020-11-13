@@ -35,22 +35,25 @@ fn main() -> ! {
     let mut timer = Delay::new(cp.SYST, clocks);
 
     // Initiate the independent watchdog timer
-    let mut watchdog = IndependentWatchdog::new(dp.IWDG);
-    watchdog.stop_on_debug(&dp.DBGMCU, true);
+    let iwd = IndependentWatchdog::new(dp.IWDG);
+    iwd.stop_on_debug(&dp.DBGMCU, true);
 
     // Start the independent watchdog timer
-    watchdog.start(MilliSeconds(1020));
-    timer.delay_ms(1000_u32);
+    if let Ok(mut watchdog) = iwd.try_start(MilliSeconds(1020)) {
+        timer.try_delay_ms(1000_u32).ok();
 
-    // Feed the independent watchdog timer
-    watchdog.feed();
-    timer.delay_ms(1000_u32);
+        // Feed the independent watchdog timer
+        watchdog.try_feed().ok();
+        timer.try_delay_ms(1000_u32).ok();
 
-    watchdog.feed();
-    timer.delay_ms(1000_u32);
+        // Feed the independent watchdog timer
+        watchdog.try_feed().ok();
+        timer.try_delay_ms(1000_u32).ok();
 
-    watchdog.feed();
-    writeln!(hstdout, "Good bye!").unwrap();
+        watchdog.try_feed().ok();
+        writeln!(hstdout, "Good bye!").unwrap();
+    }
+
     loop {}
 }
 

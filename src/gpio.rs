@@ -179,7 +179,7 @@ macro_rules! gpio {
             use core::marker::PhantomData;
             use core::convert::Infallible;
 
-            use crate::hal::digital::v2::{OutputPin, InputPin};
+            use crate::hal::digital::{OutputPin, InputPin};
             use crate::stm32::{$gpioy, $GPIOX, EXTI, SYSCFG};
 
             use crate::rcc::{AHB2, APB2};
@@ -308,13 +308,13 @@ macro_rules! gpio {
             impl<MODE> OutputPin for $PXx<Output<MODE>> {
                 type Error = Infallible;
 
-                fn set_high(&mut self) -> Result<(), Self::Error> {
+                fn try_set_high(&mut self) -> Result<(), Self::Error> {
                     // NOTE(unsafe) atomic write to a stateless register
                     unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
                     Ok(())
                 }
 
-                fn set_low(&mut self) -> Result<(), Self::Error> {
+                fn try_set_low(&mut self) -> Result<(), Self::Error> {
                     // NOTE(unsafe) atomic write to a stateless register
                     unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
                     Ok(())
@@ -506,8 +506,8 @@ macro_rules! gpio {
                         // spurious signals (e.g. LED flash)
                         // TODO: I still see a flash of LED using this order
                         match initial_state {
-                            State::High => res.set_high().unwrap(),
-                            State::Low => res.set_low().unwrap(),
+                            State::High => res.try_set_high().unwrap(),
+                            State::Low => res.try_set_low().unwrap(),
                         }
 
                         let offset = 2 * $i;
@@ -658,13 +658,13 @@ macro_rules! gpio {
                 impl<MODE> OutputPin for $PXi<Output<MODE>> {
                     type Error = Infallible;
 
-                    fn set_high(&mut self) -> Result<(), Self::Error> {
+                    fn try_set_high(&mut self) -> Result<(), Self::Error> {
                         // NOTE(unsafe) atomic write to a stateless register
                         unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
                         Ok(())
                     }
 
-                    fn set_low(&mut self) -> Result<(), Self::Error> {
+                    fn try_set_low(&mut self) -> Result<(), Self::Error> {
                         // NOTE(unsafe) atomic write to a stateless register
                         unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
                         Ok(())
@@ -674,11 +674,11 @@ macro_rules! gpio {
                 impl<MODE> InputPin for $PXi<Input<MODE>> {
                     type Error = Infallible;
 
-                    fn is_high(&self) -> Result<bool, Self::Error> {
-                        Ok(!self.is_low().unwrap())
+                    fn try_is_high(&self) -> Result<bool, Self::Error> {
+                        Ok(!self.try_is_low()?)
                     }
 
-                    fn is_low(&self) -> Result<bool, Self::Error> {
+                    fn try_is_low(&self) -> Result<bool, Self::Error> {
                         // NOTE(unsafe) atomic read with no side effects
                         Ok(unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << $i) == 0 })
                     }

@@ -32,7 +32,7 @@ fn main() -> ! {
     let mut pwr = p.PWR.constrain(&mut rcc.apb1r1);
 
     // clock configuration (clocks run at nearly the maximum frequency)
-    let _clocks = rcc
+    let _ = rcc
         .cfgr
         .sysclk(80.mhz())
         .pclk1(80.mhz())

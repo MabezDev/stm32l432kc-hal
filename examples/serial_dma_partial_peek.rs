@@ -67,16 +67,16 @@ fn main() -> ! {
     // The `block!` macro makes an operation block until it finishes
     // NOTE the error type is `!`
 
-    block!(tx.write(sent)).ok();
+    block!(tx.try_write(sent)).ok();
 
     let buf = singleton!(: [[u8; 8]; 2] = [[0; 8]; 2]).unwrap();
 
     let mut circ_buffer = rx.circ_read(channels.5, buf);
 
     // wait for 3 seconds, enter data on serial
-    timer.delay_ms(1000_u32);
-    timer.delay_ms(1000_u32);
-    timer.delay_ms(1000_u32);
+    timer.try_delay_ms(1000_u32).ok();
+    timer.try_delay_ms(1000_u32).ok();
+    timer.try_delay_ms(1000_u32).ok();
 
     // then view the partial buffer
     let _curr_half = circ_buffer

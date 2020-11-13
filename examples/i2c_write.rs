@@ -58,17 +58,17 @@ fn main() -> ! {
     // i2c.write(0x6C, &[0x08],).unwrap();
     // let val = i2c.read(0x36, &mut buffer).unwrap();
     const MAX17048_ADDR: u8 = 0x6C;
-    i2c.write_read(MAX17048_ADDR, &[0x08], &mut buffer).unwrap();
+    i2c.try_write_read(MAX17048_ADDR, &[0x08], &mut buffer).unwrap();
     let version: u16 = (buffer[0] as u16) << 8 | buffer[1] as u16;
     writeln!(hstdout, "Silicon Version: {}", version).ok();
 
     // let soc: u16 = (buffer[0] as u16) + (buffer[1] as u16 / 256);  //& 0xFF00
     // let soc: u16 = (buffer[0] as u16) << 8 & 0xFF00 | (buffer[1] as u16) & 0x00FF;
-    i2c.write_read(MAX17048_ADDR, &[0x04], &mut buffer).unwrap();
+    i2c.try_write_read(MAX17048_ADDR, &[0x04], &mut buffer).unwrap();
     let soc: u16 = (buffer[0] as u16) << 8 | buffer[1] as u16;
     writeln!(hstdout, "Batt SoC: {}%", soc / 256).ok();
 
-    i2c.write_read(MAX17048_ADDR, &[0x02], &mut buffer).unwrap();
+    i2c.try_write_read(MAX17048_ADDR, &[0x02], &mut buffer).unwrap();
     let vlt: u16 = (buffer[0] as u16) << 8 | buffer[1] as u16;
     writeln!(hstdout, "Volt: {}", vlt as f32 * 0.000078125).ok();
 
