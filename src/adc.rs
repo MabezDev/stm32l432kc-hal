@@ -13,6 +13,9 @@ use crate::{
     rcc::{AHB2, CCIPR},
 };
 
+// TODO: Only on STM32L47x/L48x.
+use crate::gpio::AnalogPin;
+
 #[cfg(any(feature = "stm32l4x1", feature = "stm32l4x2", feature = "stm32l4x3",))]
 use pac::ADC as ADC1;
 
@@ -101,7 +104,8 @@ impl ADC {
     }
 }
 
-impl<C> OneShot<ADC, u16, C> for ADC
+// TODO: AnalogPin only on STM32L47x/L48x.
+impl<C: AnalogPin> OneShot<ADC, u16, C> for ADC
 where
     C: Channel,
 {
@@ -125,6 +129,10 @@ where
 
         // Configure channel
         channel.set_sample_time(&self.inner, self.sample_time);
+
+        // TODO: Only on STM32L47x/L48x.
+        // Connect the pin to the ADC
+        channel.connect_adc();
 
         // Select channel
         self.inner.sqr1.write(|w| {
@@ -156,6 +164,10 @@ where
 
         // Read ADC value
         let val = self.inner.dr.read().bits() as u16;
+
+        // TODO: Only on STM32L47x/L48x.
+        // Disconnect the pin from the ADC
+        channel.disconnect_adc();
 
         // Disable ADC
         self.inner.cr.modify(|_, w| w.addis().set_bit());

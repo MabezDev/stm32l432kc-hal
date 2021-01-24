@@ -132,6 +132,13 @@ pub trait ExtiPin {
     fn check_interrupt(&mut self) -> bool;
 }
 
+// TODO: Only on STM32L47x/L48x.
+/// Analog Pin
+pub trait AnalogPin {
+    fn connect_adc(&mut self);
+    fn disconnect_adc(&mut self);
+}
+
 macro_rules! doc_comment {
     ($x:expr, $($tt:tt)*) => {
         #[doc = $x]
@@ -187,6 +194,9 @@ macro_rules! gpio {
                 Floating, GpioExt, Input, OpenDrain, Output, Analog, Edge, ExtiPin,
                 PullDown, PullUp, PushPull, State, Speed,
             };
+
+            // TODO: Only on STM32L47x/L48x.
+            use super::AnalogPin;
 
             /// GPIO parts
             pub struct Parts {
@@ -729,6 +739,17 @@ macro_rules! gpio {
                     /// Reads the interrupt pending bit for this pin
                     fn check_interrupt(&mut self) -> bool {
                         unsafe { ((*EXTI::ptr()).pr1.read().bits() & (1 << $i)) != 0 }
+                    }
+                }
+
+                // TODO: Only on STM32L47x/L48x.
+                impl AnalogPin for $PXi<Analog> {
+                    fn connect_adc(&mut self) {
+                        unsafe { (*$GPIOX::ptr()).ascr.modify(|r, w| w.bits(r.bits() | (1 << $i))); }
+                    }
+
+                    fn disconnect_adc(&mut self) {
+                        unsafe { (*$GPIOX::ptr()).ascr.modify(|r, w| w.bits(r.bits() & !(1 << $i))); }
                     }
                 }
 
